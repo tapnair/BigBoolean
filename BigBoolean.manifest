@@ -1,0 +1,13 @@
+{
+	"autodeskProduct":	"Fusion360",
+	"type":	"addin",
+	"id":	"0bb7e614-a125-4412-b20a-ae6d9d62daf9",
+	"author":	"Patrick Rainsberry",
+	"description":	{
+		"":	"Different Approach to a many body boolean operation"
+	},
+	"version":	"1.0",
+	"runOnStartup":	false,
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true
+}

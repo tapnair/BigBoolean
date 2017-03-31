@@ -27,7 +27,7 @@ def copy_in_direction(translation_vector, seed_body, target_component, source_bo
 
 # Creates rectangle pattern of bodies based on vectors
 def rect_body_pattern(source_body,
-                      x_qty, x_distance, y_qty, y_distance, z_qty, z_distance,
+                      x_qty, x_distance, y_qty, y_distance, z_qty, z_distance, z_step,
                       x_axis=adsk.core.Vector3D.create(1, 0, 0),
                       y_axis=adsk.core.Vector3D.create(0, 1, 0),
                       z_axis=adsk.core.Vector3D.create(0, 0, 1)):
@@ -62,8 +62,19 @@ def rect_body_pattern(source_body,
 
     seed_body = source_body.copyToComponent(target_component)
 
-    for k in range(0, z_qty):
+    z_qty_2 = int(z_qty / z_step)
+
+    for k in range(0, z_step):
         translation_vector = adsk.core.Vector3D.create(0, 0, z_distance * k)
+
+        if translation_vector.length > 0:
+            # Create a collection of entities for move
+            copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
+
+    seed_body = source_body.copyToComponent(target_component)
+
+    for k in range(0, z_qty_2):
+        translation_vector = adsk.core.Vector3D.create(0, 0, z_distance * k * z_step)
 
         if translation_vector.length > 0:
             # Create a collection of entities for move
@@ -110,7 +121,7 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
         rect_body_pattern(source_body,
                           input_values['x_qty'], input_values['x_distance'],
                           input_values['y_qty'], input_values['y_distance'],
-                          input_values['z_qty'], input_values['z_distance'])
+                          input_values['z_qty'], input_values['z_distance'], input_values['z_step'])
 
         futil.end_group(start_index)
 
@@ -141,6 +152,8 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
 
         command_inputs.addValueInput('z_distance', 'Z Spacing Distance', 'in', default_value)
         command_inputs.addIntegerSpinnerCommandInput('z_qty', 'Z Quantity', 0, 1000, 1, 1)
+
+        command_inputs.addIntegerSpinnerCommandInput('z_step', 'Z Step (Increase Performance)', 0, 1000, 1, 1)
 
 
 

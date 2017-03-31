@@ -7,6 +7,24 @@ from .Fusion360Utilities.Fusion360CommandBase import Fusion360CommandBase
 from .Fusion360Utilities import Fusion360Utilities as futil
 
 
+def copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats):
+
+    new_collection = adsk.core.ObjectCollection.create()
+
+    new_body = seed_body.copyToComponent(target_component)
+    new_collection.add(new_body)
+
+    transform_matrix = adsk.core.Matrix3D.create()
+
+    transform_matrix.translation = translation_vector
+
+    move_input = move_feats.createInput(new_collection, transform_matrix)
+    move_feats.add(move_input)
+
+    tool_bodies = [new_body]
+    futil.combine_feature(source_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
+
+
 # Creates rectangle pattern of bodies based on vectors
 def rect_body_pattern(source_body,
                       x_qty, x_distance, y_qty, y_distance, z_qty, z_distance,
@@ -14,12 +32,9 @@ def rect_body_pattern(source_body,
                       y_axis=adsk.core.Vector3D.create(0, 1, 0),
                       z_axis=adsk.core.Vector3D.create(0, 0, 1)):
 
-    # TODO figure out target Occurence vs component maybe just make it the active component no matter what
-
     app_objects = futil.get_app_objects()
 
     # target_occurrence = target_body.assemblyContext
-
 
     target_component = app_objects['design'].activeComponent
 
@@ -27,42 +42,32 @@ def rect_body_pattern(source_body,
 
     seed_body = source_body.copyToComponent(target_component)
 
+    for i in range(0, x_qty):
+
+        translation_vector = adsk.core.Vector3D.create(x_distance * i, 0, 0)
+
+        if translation_vector.length > 0:
+            # Create a collection of entities for move
+            copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
+
+    seed_body = source_body
+
+    for j in range(0, y_qty):
+
+        translation_vector = adsk.core.Vector3D.create(0, y_distance * j, 0)
+
+        if translation_vector.length > 0:
+            # Create a collection of entities for move
+            copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
+
+    seed_body = source_body
+
     for k in range(0, z_qty):
-        for j in range(0, y_qty):
-            for i in range(0, x_qty):
+        translation_vector = adsk.core.Vector3D.create(0, 0, z_distance * k)
 
-                translation_vector = adsk.core.Vector3D.create(x_distance * i, y_distance * j, z_distance * k)
-
-                if translation_vector.length > 0:
-                    # Create a collection of entities for move
-                    new_collection = adsk.core.ObjectCollection.create()
-
-                    new_body = seed_body.copyToComponent(target_component)
-                    new_collection.add(new_body)
-
-                    transform_matrix = adsk.core.Matrix3D.create()
-
-                    # x_axis.normalize()
-                    # x_axis.scaleBy(x_distance * i)
-                    # y_axis.normalize()
-                    # y_axis.scaleBy(y_distance * j)
-                    # z_axis.normalize()
-                    # z_axis.scaleBy(z_distance * k)
-
-
-                    # translation_vector.add(x_axis)
-                    # translation_vector.add(y_axis)
-                    # translation_vector.add(z_axis)
-
-
-                    transform_matrix.translation = translation_vector
-
-                    move_input = move_feats.createInput(new_collection, transform_matrix)
-                    move_feats.add(move_input)
-
-                    tool_bodies = [new_body]
-                    futil.combine_feature(source_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
-
+        if translation_vector.length > 0:
+            # Create a collection of entities for move
+            copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
 
 
 # Class for a Fusion 360 Command

@@ -50,7 +50,7 @@ def rect_body_pattern(source_body,
             # Create a collection of entities for move
             copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
 
-    seed_body = source_body
+    seed_body = source_body.copyToComponent(target_component)
 
     for j in range(0, y_qty):
 
@@ -60,7 +60,7 @@ def rect_body_pattern(source_body,
             # Create a collection of entities for move
             copy_in_direction(translation_vector, seed_body, target_component, source_body, move_feats)
 
-    seed_body = source_body
+    seed_body = source_body.copyToComponent(target_component)
 
     for k in range(0, z_qty):
         translation_vector = adsk.core.Vector3D.create(0, 0, z_distance * k)

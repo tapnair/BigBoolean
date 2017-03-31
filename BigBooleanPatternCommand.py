@@ -122,15 +122,20 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
         # Refresh the dropdowns for printer and slicer profiles
         if changed_input.id == 'bool_input':
             target_input = command_inputs.itemById('target_input')
+            z_step_input = command_inputs.itemById('z_step')
 
             if input_values['bool_input']:
                 target_input.isEnabled = True
                 target_input.isVisible = True
+                z_step_input.isEnabled = False
+                z_step_input.isVisible = False
 
             else:
                 target_input.clearSelection()
                 target_input.isEnabled = False
                 target_input.isVisible = False
+                z_step_input.isEnabled = True
+                z_step_input.isVisible = True
 
     # Run when the user presses OK
     # This is typically where your main program logic would go

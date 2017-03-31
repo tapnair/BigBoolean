@@ -8,19 +8,24 @@ from .Fusion360Utilities import Fusion360Utilities as futil
 
 
 # Creates rectangle pattern of bodies based on vectors
-def rect_body_pattern(target_body, source_body,
+def rect_body_pattern(source_body,
                       x_qty, x_distance, y_qty, y_distance, z_qty, z_distance,
                       x_axis=adsk.core.Vector3D.create(1, 0, 0),
                       y_axis=adsk.core.Vector3D.create(0, 1, 0),
                       z_axis=adsk.core.Vector3D.create(0, 0, 1)):
 
     # TODO figure out target Occurence vs component maybe just make it the active component no matter what
-    target_occurrence = target_body.assemblyContext
-    target_component = target_body.parentComponent
+
+    app_objects = futil.get_app_objects()
+
+    # target_occurrence = target_body.assemblyContext
+
+
+    target_component = app_objects['design'].activeComponent
 
     move_feats = target_component.features.moveFeatures
 
-    seed_body = source_body.copyToComponent(target_occurrence)
+    seed_body = source_body.copyToComponent(target_component)
 
     for k in range(0, z_qty):
         for j in range(0, y_qty):
@@ -32,7 +37,7 @@ def rect_body_pattern(target_body, source_body,
                     # Create a collection of entities for move
                     new_collection = adsk.core.ObjectCollection.create()
 
-                    new_body = seed_body.copyToComponent(target_occurrence)
+                    new_body = seed_body.copyToComponent(target_component)
                     new_collection.add(new_body)
 
                     transform_matrix = adsk.core.Matrix3D.create()
@@ -56,7 +61,7 @@ def rect_body_pattern(target_body, source_body,
                     move_feats.add(move_input)
 
                     tool_bodies = [new_body]
-                    futil.combine_feature(target_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
+                    futil.combine_feature(source_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
 
 
 
@@ -92,12 +97,12 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
         all_selections = input_values['selection_input']
         source_body = all_selections[0]
 
-        all_selections = input_values['target_input']
-        target_body = all_selections[0]
+        # all_selections = input_values['target_input']
+        # target_body = all_selections[0]
 
         start_index = futil.start_group()
 
-        rect_body_pattern(target_body, source_body,
+        rect_body_pattern(source_body,
                           input_values['x_qty'], input_values['x_distance'],
                           input_values['y_qty'], input_values['y_distance'],
                           input_values['z_qty'], input_values['z_distance'])
@@ -114,10 +119,10 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
         body_select.addSelectionFilter('SolidBodies')
         body_select.setSelectionLimits(1,1)
 
-        # Select the bodies
-        body_select = command_inputs.addSelectionInput('target_input', 'Select Target Body', 'Select Body')
-        body_select.addSelectionFilter('SolidBodies')
-        body_select.setSelectionLimits(1, 1)
+        # # Select the bodies
+        # body_select = command_inputs.addSelectionInput('target_input', 'Select Target Body', 'Select Body')
+        # body_select.addSelectionFilter('SolidBodies')
+        # body_select.setSelectionLimits(1, 1)
 
         # Create a default value using a string
         default_value = adsk.core.ValueInput.createByString('1.0 in')

@@ -6,6 +6,7 @@ from .Fusion360Utilities.Fusion360Utilities import get_app_objects
 from .Fusion360Utilities.Fusion360CommandBase import Fusion360CommandBase
 from .Fusion360Utilities import Fusion360Utilities as futil
 
+
 # Class for a Fusion 360 Command
 # Place your program logic here
 # Delete the line that says "pass" for any method you want to use

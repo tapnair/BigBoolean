@@ -4,6 +4,7 @@
 # Importing sample Fusion Command
 # Could import multiple Command definitions here
 from .BigBooleanCommand import BigBooleanCommand
+from .BigBooleanPatternCommand import BigBooleanPatternCommand
 
 commands = []
 command_definitions = []
@@ -21,6 +22,17 @@ cmd = {
 command_definitions.append(cmd)
 
 
+# Define parameters for 1st command
+cmd = {
+    'cmd_name': 'Big Boolean Pattern',
+    'cmd_description': 'Different Approach to creating Booleans of many bodies',
+    'cmd_id': 'cmdID_BigBooleanPatternCommand',
+    'cmd_resources': './resources',
+    'workspace': 'FusionSolidEnvironment',
+    'toolbar_panel_id': 'SolidScriptsAddinsPanel',
+    'class': BigBooleanPatternCommand
+}
+command_definitions.append(cmd)
 
 # Set to True to display various useful messages when debugging your app
 debug = False

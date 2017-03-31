@@ -8,15 +8,19 @@ from .Fusion360Utilities import Fusion360Utilities as futil
 
 
 # Creates rectangle pattern of bodies based on vectors
-def rect_body_pattern(target_component, source_body,
+def rect_body_pattern(target_body, source_body,
                       x_qty, x_distance, y_qty, y_distance, z_qty, z_distance,
                       x_axis=adsk.core.Vector3D.create(1, 0, 0),
                       y_axis=adsk.core.Vector3D.create(0, 1, 0),
                       z_axis=adsk.core.Vector3D.create(0, 0, 1)):
 
+    # TODO figure out target Occurence vs component maybe just make it the active component no matter what
+    target_occurrence = target_body.assemblyContext
+    target_component = target_body.parentComponent
+
     move_feats = target_component.features.moveFeatures
 
-    seed_body = source_body.copyToComponent(target_component)
+    seed_body = source_body.copyToComponent(target_occurrence)
 
     for k in range(0, z_qty):
         for j in range(0, y_qty):
@@ -28,7 +32,7 @@ def rect_body_pattern(target_component, source_body,
                     # Create a collection of entities for move
                     new_collection = adsk.core.ObjectCollection.create()
 
-                    new_body = seed_body.copyToComponent(target_component)
+                    new_body = seed_body.copyToComponent(target_occurrence)
                     new_collection.add(new_body)
 
                     transform_matrix = adsk.core.Matrix3D.create()
@@ -52,7 +56,7 @@ def rect_body_pattern(target_component, source_body,
                     move_feats.add(move_input)
 
                     tool_bodies = [new_body]
-                    futil.combine_feature(source_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
+                    futil.combine_feature(target_body, tool_bodies, adsk.fusion.FeatureOperations.JoinFeatureOperation)
 
 
 
@@ -86,11 +90,17 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
 
         # Get the values from the user input
         all_selections = input_values['selection_input']
+        source_body = all_selections[0]
 
-        start_index = futil.start_group()
+        all_selections = input_values['target_input']
         target_body = all_selections[0]
 
-        rect_body_pattern(target_body.parentComponent, target_body, 1, 2.54, 1, 2.54, 4, 2.54)
+        start_index = futil.start_group()
+
+        rect_body_pattern(target_body, source_body,
+                          input_values['x_qty'], input_values['x_distance'],
+                          input_values['y_qty'], input_values['y_distance'],
+                          input_values['z_qty'], input_values['z_distance'])
 
         futil.end_group(start_index)
 
@@ -100,6 +110,27 @@ class BigBooleanPatternCommand(Fusion360CommandBase):
     def on_create(self, command, command_inputs):
 
         # Select the bodies
-        body_select = command_inputs.addSelectionInput('selection_input', 'Select Bodies', 'Select Bodies')
+        body_select = command_inputs.addSelectionInput('selection_input', 'Select Source Body', 'Select Body')
         body_select.addSelectionFilter('SolidBodies')
         body_select.setSelectionLimits(1,1)
+
+        # Select the bodies
+        body_select = command_inputs.addSelectionInput('target_input', 'Select Target Body', 'Select Body')
+        body_select.addSelectionFilter('SolidBodies')
+        body_select.setSelectionLimits(1, 1)
+
+        # Create a default value using a string
+        default_value = adsk.core.ValueInput.createByString('1.0 in')
+
+        # Create a few inputs in the UI
+        command_inputs.addValueInput('x_distance', 'X Spacing Distance', 'in', default_value)
+        command_inputs.addIntegerSpinnerCommandInput('x_qty', 'X Quantity', 0, 1000, 1, 1)
+
+        command_inputs.addValueInput('y_distance', 'Y Spacing Distance', 'in', default_value)
+        command_inputs.addIntegerSpinnerCommandInput('y_qty', 'Y Quantity', 0, 1000, 1, 1)
+
+        command_inputs.addValueInput('z_distance', 'Z Spacing Distance', 'in', default_value)
+        command_inputs.addIntegerSpinnerCommandInput('z_qty', 'Z Quantity', 0, 1000, 1, 1)
+
+
+
